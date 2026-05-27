@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>イベント一覧</title>
+</head>
+
+<body>
+
+    <h1>イベント一覧</h1>
+
+    {% for event in events %}
+
+        <hr>
+
+        <h2>{{ event["title"] }}</h2>
+
+        <p>
+            PDF:
+            <a href="{{ event['pdf_link'] }}">
+                詳細を見る
+            </a>
+        </p>
+
+        <p>
+            定員: {{ event["max_participants"] }}
+        </p>
+
+        <p>
+            締切: {{ event["deadline"] }}
+        </p>
+
+        <form action="/join_event" method="post">
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
+            <input
+                type="hidden"
+                name="event_id"
+                value="{{ event['id'] }}"
+            >
+
+            <button type="submit">
+                参加する
+            </button>
+
+        </form>
+
+    {% endfor %}
+
+</body>
+
+</html>

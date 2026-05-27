@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>イベント編集</title>
+</head>
+
+<body>
+
+<h1>イベント編集</h1>
+
+<form action="/update_event" method="POST">
+
+    <input
+        type="hidden"
+        name="csrf_token"
+        value="{{ csrf_token() }}"
+    >
+
+    <input
+        type="hidden"
+        name="event_id"
+        value="{{ event['id'] }}"
+    >
+
+    タイトル<br>
+
+    <input
+        type="text"
+        name="title"
+        value="{{ event['title'] }}"
+    >
+
+    <br><br>
+
+    PDFリンク<br>
+
+    <input
+        type="text"
+        name="pdf_link"
+        value="{{ event['pdf_link'] }}"
+    >
+
+    <br><br>
+
+    定員<br>
+
+    <input
+        type="number"
+        name="max_participants"
+        value="{{ event['max_participants'] }}"
+    >
+
+    <br><br>
+
+    締切<br>
+
+    <input
+        type="datetime-local"
+        name="deadline"
+        value="{{ event['deadline'] }}"
+    >
+
+    <br><br>
+
+    <button type="submit">
+        更新
+    </button>
+
+</form>
+
+</body>
+</html>

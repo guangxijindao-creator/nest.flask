@@ -1,0 +1,21 @@
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>参加者一覧</title>
+
+</head>
+
+<body>
+
+<h1>参加者一覧</h1>
+
+{% for p in participants %}
+
+    <p>{{ p["username"] }}</p>
+
+{% endfor %}
+
+</body>
+
+</html>

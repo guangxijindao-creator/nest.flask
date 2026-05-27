@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>参加イベント一覧</title>
+
+</head>
+
+<body>
+
+<h1>参加イベント一覧</h1>
+
+{% for event in events %}
+
+    <div>
+
+        <h3>{{ event["title"] }}</h3>
+
+        <p>
+            締切: {{ event["deadline"] }}
+        </p>
+
+        <a href="{{ event['pdf_link'] }}">
+            PDF
+        </a>
+
+    </div>
+
+    <hr>
+
+{% endfor %}
+
+</body>
+
+</html>

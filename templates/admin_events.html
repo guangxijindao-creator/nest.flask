@@ -1,0 +1,41 @@
+<h1>管理者イベント一覧</h1>
+
+{% for e in events %}
+
+<div>
+
+    <h3>{{ e[1] }}</h3>
+
+    <a href="/event_participants/{{ e[0] }}">
+        参加者を見る
+    </a>
+
+    <a href="/edit_event/{{ e[0] }}">
+        編集
+    </a>
+
+    <form action="/delete_event" method="POST">
+
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+        >
+
+        <input
+            type="hidden"
+            name="event_id"
+            value="{{ e[0] }}"
+        >
+
+        <button type="submit">
+            削除
+        </button>
+
+    </form>
+
+</div>
+
+<hr>
+
+{% endfor %}

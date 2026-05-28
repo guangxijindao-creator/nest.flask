@@ -12,20 +12,22 @@
 
 <form action="/update_event" method="POST">
 
+    <!-- CSRF -->
     <input
         type="hidden"
         name="csrf_token"
         value="{{ csrf_token() }}"
     >
 
+    <!-- event_id -->
     <input
         type="hidden"
         name="event_id"
         value="{{ event['id'] }}"
     >
 
+    <!-- タイトル -->
     タイトル<br>
-
     <input
         type="text"
         name="title"
@@ -34,8 +36,8 @@
 
     <br><br>
 
+    <!-- PDFリンク -->
     PDFリンク<br>
-
     <input
         type="text"
         name="pdf_link"
@@ -44,8 +46,8 @@
 
     <br><br>
 
+    <!-- 定員 -->
     定員<br>
-
     <input
         type="number"
         name="max_participants"
@@ -54,12 +56,12 @@
 
     <br><br>
 
+    <!-- 締切（ここが修正ポイント） -->
     締切<br>
-
     <input
         type="datetime-local"
         name="deadline"
-        value="{{ event['deadline'] }}"
+        value="{{ event['deadline'][:16] }}"
     >
 
     <br><br>

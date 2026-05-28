@@ -1,44 +1,44 @@
-<p>イベント名</p>
+<form action="/save_event" method="POST">
 
-        <input
-            type="text"
-            name="title"
-            required
-        >
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <p>PDFリンク</p>
+    <p>イベント名</p>
 
-        <input
-            type="url"
-            name="pdf_link"
-            required
-        >
+    <input
+        type="text"
+        name="title"
+        required
+    >
 
-        <p>参加人数上限</p>
+    <p>PDFリンク</p>
 
-        <input
-            type="number"
-            name="max_participants"
-            min="1"
-            required
-        >
+    <input
+        type="url"
+        name="pdf_link"
+        required
+    >
 
-        <p>応募締切日時</p>
+    <p>参加人数上限</p>
 
-        <input
-            type="datetime-local"
-            name="deadline"
-            required
-        >
+    <input
+        type="number"
+        name="max_participants"
+        min="1"
+        required
+    >
 
-        <br><br>
+    <p>応募締切日時</p>
 
-        <button type="submit">
-            イベント作成
-        </button>
+    <input
+        type="datetime-local"
+        name="deadline"
+        required
+    >
 
-    </form>
+    <br><br>
 
-</body>
+    <button type="submit">
+        イベント作成
+    </button>
 
-</html>
+</form>

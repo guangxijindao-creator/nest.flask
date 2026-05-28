@@ -1,35 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
+
 <head>
-    <title>登録</title>
+    <meta charset="UTF-8">
+    <title>登録・ログイン</title>
 </head>
+
 <body>
 
 <h1>ユーザー登録</h1>
 
 <form action="/register" method="post">
 
-    <input type="text" name="username" placeholder="ID">
+    <input
+        type="hidden"
+        name="csrf_token"
+        value="{{ csrf_token() }}"
+    >
 
-    <input type="password" name="password" placeholder="パスワード">
+    <input
+        type="text"
+        name="username"
+        placeholder="ID"
+        required
+    >
 
-    <input type="password" name="password_confirm"placeholder="パスワード確認">
+    <input
+        type="password"
+        name="password"
+        placeholder="パスワード"
+        required
+    >
 
-    <button type="submit">登録</button>
+    <input
+        type="password"
+        name="password_confirm"
+        placeholder="パスワード確認"
+        required
+    >
+
+    <button type="submit">
+        登録
+    </button>
 
 </form>
+
+<hr>
 
 <h1>ログイン</h1>
 
 <form action="/login" method="post">
 
-    <input type="text" name="username" placeholder="ID">
+    <input
+        type="hidden"
+        name="csrf_token"
+        value="{{ csrf_token() }}"
+    >
 
-    <input type="password" name="password" placeholder="パスワード">
+    <input
+        type="text"
+        name="username"
+        placeholder="ID"
+        required
+    >
 
-    <button type="submit">ログイン</button>
+    <input
+        type="password"
+        name="password"
+        placeholder="パスワード"
+        required
+    >
+
+    <button type="submit">
+        ログイン
+    </button>
 
 </form>
 
 </body>
+
 </html>

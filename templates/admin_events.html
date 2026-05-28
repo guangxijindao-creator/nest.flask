@@ -2,37 +2,32 @@
 
 {% for e in events %}
 
-<div>
+<div class="event-card">
 
-    <h3>{{ e[1] }}</h3>
+    <div class="event-header">
+        <h2 class="event-title">{{ e["title"] }}</h2>
+    </div>
 
-    <a href="/event_participants/{{ e[0] }}">
-        参加者を見る
-    </a>
+    <div class="event-actions">
 
-    <a href="/edit_event/{{ e[0] }}">
-        編集
-    </a>
+        <a href="/edit_event/{{ e['id'] }}" class="btn edit-btn">
+            編集
+        </a>
 
-    <form action="/delete_event" method="POST">
+        <form action="/delete_event" method="POST" class="action-form">
 
-        <input
-            type="hidden"
-            name="csrf_token"
-            value="{{ csrf_token() }}"
-        >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="event_id" value="{{ e['id'] }}">
 
-        <input
-            type="hidden"
-            name="event_id"
-            value="{{ e[0] }}"
-        >
+            <button type="submit"
+                    class="btn delete-btn"
+                    onclick="return confirm('本当に削除しますか？');">
+                削除
+            </button>
 
-        <button type="submit">
-            削除
-        </button>
+        </form>
 
-    </form>
+    </div>
 
 </div>
 

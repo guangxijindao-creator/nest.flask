@@ -1,82 +1,122 @@
-<!DOCTYPE html>
-<html lang="ja">
+{% extends "base.html" %}
+{% block title %}| ログイン・登録{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>登録・ログイン</title>
-</head>
+{% block nav_links %}
+<span style="font-size:13px;color:var(--text-light);">つながる、ひろがる、みつかる。</span>
+{% endblock %}
 
-<body>
+{% block extra_style %}
+<style>
+.hero {
+    text-align: center;
+    padding: 64px 24px 40px;
+}
+.hero-tag {
+    display: inline-block;
+    padding: 6px 18px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(244,160,181,0.15), rgba(126,200,227,0.15));
+    color: var(--purple);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(176,136,212,0.25);
+}
+.hero h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.2;
+    margin-bottom: 12px;
+}
+.hero p {
+    color: var(--text-light);
+    font-size: 16px;
+    margin-bottom: 48px;
+}
+.forms-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+}
+@media (max-width: 640px) {
+    .forms-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 28px; }
+}
+.form-card-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 4px;
+}
+.form-card-sub {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 28px;
+}
+.divider {
+    height: 1px;
+    background: #e8ecf4;
+    margin: 28px 0;
+}
+</style>
+{% endblock %}
 
-<h1>ユーザー登録</h1>
+{% block content %}
+<div class="hero">
+    <div class="hero-tag"># ネストで繋がろう！！</div>
+    <h1>その日、<span class="grad-text">自然に</span>出会える。</h1>
+    <p>つながる、ひろがる、みつかる。</p>
+</div>
 
-<form action="/register" method="post">
+<div class="forms-grid">
+    <!-- 登録 -->
+    <div class="card">
+        <div class="grad-bar"></div>
+        <div class="form-card-title">新規登録</div>
+        <div class="form-card-sub">アカウントを作成して参加しよう</div>
+        <form action="/register" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label class="form-label">ユーザーID</label>
+                <input type="text" name="username" class="form-input" placeholder="IDを入力" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">パスワード</label>
+                <input type="password" name="password" class="form-input" placeholder="パスワードを入力" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">パスワード確認</label>
+                <input type="password" name="password_confirm" class="form-input" placeholder="もう一度入力" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">アカウント作成</button>
+        </form>
+    </div>
 
-    <input
-        type="hidden"
-        name="csrf_token"
-        value="{{ csrf_token() }}"
-    >
-
-    <input
-        type="text"
-        name="username"
-        placeholder="ID"
-        required
-    >
-
-    <input
-        type="password"
-        name="password"
-        placeholder="パスワード"
-        required
-    >
-
-    <input
-        type="password"
-        name="password_confirm"
-        placeholder="パスワード確認"
-        required
-    >
-
-    <button type="submit">
-        登録
-    </button>
-
-</form>
-
-<hr>
-
-<h1>ログイン</h1>
-
-<form action="/login" method="post">
-
-    <input
-        type="hidden"
-        name="csrf_token"
-        value="{{ csrf_token() }}"
-    >
-
-    <input
-        type="text"
-        name="username"
-        placeholder="ID"
-        required
-    >
-
-    <input
-        type="password"
-        name="password"
-        placeholder="パスワード"
-        required
-    >
-
-    <button type="submit">
-        ログイン
-    </button>
-
-</form>
-
-</body>
-
-</html>
+    <!-- ログイン -->
+    <div class="card">
+        <div class="grad-bar"></div>
+        <div class="form-card-title">ログイン</div>
+        <div class="form-card-sub">すでにアカウントをお持ちの方</div>
+        <form action="/login" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label class="form-label">ユーザーID</label>
+                <input type="text" name="username" class="form-input" placeholder="IDを入力" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">パスワード</label>
+                <input type="password" name="password" class="form-input" placeholder="パスワードを入力" required>
+            </div>
+            <div style="height: 68px;"></div>
+            <button type="submit" class="btn btn-navy btn-full">ログイン</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

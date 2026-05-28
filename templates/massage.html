@@ -1,24 +1,21 @@
-<!DOCTYPE html>
-<html lang="ja">
+{% extends "base.html" %}
+{% block title %}| お知らせ{% endblock %}
 
-<head>
+{% block nav_links %}
+<a href="/mypage" class="nav-link">マイページ</a>
+{% endblock %}
 
-    <meta charset="UTF-8">
-
-    <title>メッセージ</title>
-
-</head>
-
-<body>
-
-    <h1>{{ message }}</h1>
-
-    <br>
-
-    <a href="{{ back_url }}">
-        戻る
-    </a>
-
-</body>
-
-</html>
+{% block content %}
+<div class="container-sm">
+    <div class="card" style="text-align:center;padding:64px 40px;">
+        <div style="font-size:48px;margin-bottom:20px;">
+            {% if "成功" in message or "完了" in message %}✅
+            {% elif "NG" in message or "違" in message or "エラー" in message %}❌
+            {% elif "権限" in message %}🔒
+            {% else %}ℹ️{% endif %}
+        </div>
+        <div style="font-size:20px;font-weight:700;color:var(--navy);margin-bottom:32px;">{{ message }}</div>
+        <a href="{{ back_url }}" class="btn btn-primary">戻る</a>
+    </div>
+</div>
+{% endblock %}

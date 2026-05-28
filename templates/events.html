@@ -1,20 +1,52 @@
-{% extends "base.html" %} {% block title %}| イベント一覧{% endblock %} {% block nav_links %} マイページ 参加イベント ログアウト {% endblock %} {% block content %}
-イベント一覧
-開催予定のイベントに申し込もう
-{% if events %}
-{% for event in events %}
-イベント
-{{ event["title"] }}
-🗓 締切：{{ event["deadline"] }}
-👥 定員：{{ event["max_participants"] }}名
-{% if event["pdf_link"] %}
-📄 詳細PDF
-{% endif %}
-参加する
-{% endfor %}
-{% else %}
-🎪
-現在開催予定のイベントはありません
-新しいイベントをお待ちください
-{% endif %}
+{% extends "base.html" %}
+{% block title %}| イベント一覧{% endblock %}
+
+{% block nav_links %}
+<a href="/mypage" class="nav-link">マイページ</a>
+<a href="/my_events" class="nav-link">参加イベント</a>
+<a href="/logout" class="nav-link primary">ログアウト</a>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="margin-bottom:32px;">
+        <div class="page-title">イベント一覧</div>
+        <div class="page-subtitle">開催予定のイベントに申し込もう</div>
+    </div>
+
+    {% if events %}
+    <div style="display:grid;gap:20px;">
+        {% for event in events %}
+        <div class="card" style="display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;">
+            <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                    <span class="badge badge-pink">イベント</span>
+                </div>
+                <div style="font-size:20px;font-weight:700;color:var(--navy);margin-bottom:10px;">{{ event["title"] }}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--text-light);">
+                    <span>🗓 締切：{{ event["deadline"] }}</span>
+                    <span>👥 定員：{{ event["max_participants"] }}名</span>
+                    {% if event["pdf_link"] %}
+                    <a href="{{ event['pdf_link'] }}" target="_blank" style="color:var(--purple);text-decoration:none;font-weight:500;">📄 詳細PDF</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div>
+                <form action="/join_event" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="event_id" value="{{ event['id'] }}">
+                    <button type="submit" class="btn btn-primary">参加する</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card" style="text-align:center;padding:64px 24px;">
+        <div style="font-size:48px;margin-bottom:16px;">🎪</div>
+        <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px;">現在開催予定のイベントはありません</div>
+        <div style="color:var(--text-light);font-size:14px;">新しいイベントをお待ちください</div>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

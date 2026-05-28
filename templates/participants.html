@@ -1,21 +1,51 @@
-<head>
+{% extends "base.html" %}
+{% block title %}| 参加者一覧{% endblock %}
 
-    <meta charset="UTF-8">
+{% block nav_links %}
+<a href="/admin_events" class="nav-link">イベント管理</a>
+<a href="/logout" class="nav-link primary">ログアウト</a>
+{% endblock %}
 
-    <title>参加者一覧</title>
+{% block content %}
+<div class="container">
+    <div style="margin-bottom:32px;">
+        <div class="page-title">参加者一覧</div>
+        <div class="page-subtitle">このイベントへの申込者</div>
+    </div>
 
-</head>
+    {% if participants %}
+    <div class="card" style="padding:0;overflow:hidden;">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ユーザーID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in participants %}
+                    <tr>
+                        <td style="color:var(--text-light);font-size:13px;">{{ loop.index }}</td>
+                        <td style="font-weight:600;">{{ p["username"] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div style="padding:16px 20px;background:var(--bg);font-size:13px;color:var(--text-light);">
+            合計 <strong style="color:var(--navy);">{{ participants|length }}</strong> 名
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="text-align:center;padding:64px 24px;">
+        <div style="font-size:48px;margin-bottom:16px;">👥</div>
+        <div style="font-size:18px;font-weight:700;color:var(--navy);">まだ参加者がいません</div>
+    </div>
+    {% endif %}
 
-<body>
-
-<h1>参加者一覧</h1>
-
-{% for p in participants %}
-
-    <p>{{ p["username"] }}</p>
-
-{% endfor %}
-
-</body>
-
-</html>
+    <div style="margin-top:24px;">
+        <a href="/admin_events" class="btn btn-outline">← イベント管理に戻る</a>
+    </div>
+</div>
+{% endblock %}

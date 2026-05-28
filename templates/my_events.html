@@ -1,38 +1,43 @@
-<!DOCTYPE html>
-<html lang="ja">
+{% extends "base.html" %}
+{% block title %}| 参加イベント{% endblock %}
 
-<head>
+{% block nav_links %}
+<a href="/mypage" class="nav-link">マイページ</a>
+<a href="/events" class="nav-link">イベント一覧</a>
+<a href="/logout" class="nav-link primary">ログアウト</a>
+{% endblock %}
 
-    <meta charset="UTF-8">
-
-    <title>参加イベント一覧</title>
-
-</head>
-
-<body>
-
-<h1>参加イベント一覧</h1>
-
-{% for event in events %}
-
-    <div>
-
-        <h3>{{ event["title"] }}</h3>
-
-        <p>
-            締切: {{ event["deadline"] }}
-        </p>
-
-        <a href="{{ event['pdf_link'] }}">
-            PDF
-        </a>
-
+{% block content %}
+<div class="container">
+    <div style="margin-bottom:32px;">
+        <div class="page-title">参加イベント</div>
+        <div class="page-subtitle">申し込み済みのイベント一覧</div>
     </div>
 
-    <hr>
-
-{% endfor %}
-
-</body>
-
-</html>
+    {% if events %}
+    <div style="display:grid;gap:20px;">
+        {% for event in events %}
+        <div class="card">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <span class="badge badge-blue">申込済</span>
+            </div>
+            <div style="font-size:20px;font-weight:700;color:var(--navy);margin-bottom:10px;">{{ event["title"] }}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--text-light);">
+                <span>🗓 締切：{{ event["deadline"] }}</span>
+                {% if event["pdf_link"] %}
+                <a href="{{ event['pdf_link'] }}" target="_blank" style="color:var(--purple);text-decoration:none;font-weight:500;">📄 詳細PDF</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card" style="text-align:center;padding:64px 24px;">
+        <div style="font-size:48px;margin-bottom:16px;">📋</div>
+        <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px;">まだ参加イベントがありません</div>
+        <div style="color:var(--text-light);font-size:14px;margin-bottom:24px;">イベント一覧から申し込んでみよう</div>
+        <a href="/events" class="btn btn-primary">イベントを見る</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

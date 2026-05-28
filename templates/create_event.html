@@ -1,44 +1,41 @@
-<form action="/save_event" method="POST">
+{% extends "base.html" %}
+{% block title %}| イベント作成{% endblock %}
 
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{% block nav_links %}
+<a href="/admin_events" class="nav-link">イベント管理</a>
+<a href="/logout" class="nav-link primary">ログアウト</a>
+{% endblock %}
 
-    <p>イベント名</p>
+{% block content %}
+<div class="container-sm">
+    <div class="card">
+        <div class="grad-bar"></div>
+        <div class="page-title">イベント作成</div>
+        <div class="page-subtitle">新しいイベントの情報を入力してください</div>
 
-    <input
-        type="text"
-        name="title"
-        required
-    >
-
-    <p>PDFリンク</p>
-
-    <input
-        type="url"
-        name="pdf_link"
-        required
-    >
-
-    <p>参加人数上限</p>
-
-    <input
-        type="number"
-        name="max_participants"
-        min="1"
-        required
-    >
-
-    <p>応募締切日時</p>
-
-    <input
-        type="datetime-local"
-        name="deadline"
-        required
-    >
-
-    <br><br>
-
-    <button type="submit">
-        イベント作成
-    </button>
-
-</form>
+        <form action="/save_event" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label class="form-label">イベントタイトル</label>
+                <input type="text" name="title" class="form-input" placeholder="例：男性同士の交流イベント" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">詳細PDF URL</label>
+                <input type="url" name="pdf_link" class="form-input" placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label class="form-label">定員（人数）</label>
+                <input type="number" name="max_participants" class="form-input" placeholder="例：20" min="1" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">申込締切</label>
+                <input type="datetime-local" name="deadline" class="form-input" required>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:8px;">
+                <a href="/admin_events" class="btn btn-outline" style="flex:1;text-align:center;">キャンセル</a>
+                <button type="submit" class="btn btn-primary" style="flex:2;">イベントを作成</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

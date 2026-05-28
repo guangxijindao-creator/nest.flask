@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEST {% block title %}{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #1a2744;
+            --navy-light: #2d3f6b;
+            --pink: #f4a0b5;
+            --blue: #7ec8e3;
+            --purple: #b088d4;
+            --grad: linear-gradient(135deg, #f4a0b5, #b088d4, #7ec8e3);
+            --grad-btn: linear-gradient(135deg, #f4a0b5 0%, #b088d4 50%, #7ec8e3 100%);
+            --white: #ffffff;
+            --bg: #f5f6fa;
+            --text: #1a2744;
+            --text-light: #6b7a99;
+            --shadow: 0 4px 24px rgba(26,39,68,0.10);
+            --shadow-hover: 0 8px 32px rgba(26,39,68,0.18);
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ナビゲーション */
+        nav {
+            background: var(--white);
+            box-shadow: 0 2px 12px rgba(26,39,68,0.08);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .nav-logo-icon {
+            width: 36px;
+            height: 36px;
+        }
+        .nav-logo-text {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--navy);
+            letter-spacing: 3px;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+        }
+        .nav-link:hover {
+            background: var(--bg);
+            color: var(--navy);
+        }
+        .nav-link.primary {
+            background: var(--navy);
+            color: white;
+        }
+        .nav-link.primary:hover {
+            background: var(--navy-light);
+        }
+
+        /* メインコンテナ */
+        .container {
+            max-width: 960px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+        .container-sm {
+            max-width: 480px;
+            margin: 60px auto;
+            padding: 0 24px;
+        }
+
+        /* カード */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 40px;
+            transition: box-shadow 0.2s;
+        }
+
+        /* ページタイトル */
+        .page-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 8px;
+        }
+        .page-subtitle {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        /* フォーム */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-light);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8ecf4;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-family: 'Noto Sans JP', sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            transition: all 0.2s;
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: var(--purple);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(176,136,212,0.12);
+        }
+
+        /* ボタン */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Noto Sans JP', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s;
+            border: none;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary {
+            background: var(--grad-btn);
+            color: white;
+            box-shadow: 0 4px 16px rgba(176,136,212,0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(176,136,212,0.45);
+        }
+        .btn-navy {
+            background: var(--navy);
+            color: white;
+            box-shadow: 0 4px 16px rgba(26,39,68,0.25);
+        }
+        .btn-navy:hover {
+            background: var(--navy-light);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(26,39,68,0.30);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--navy);
+            border: 2px solid #e8ecf4;
+        }
+        .btn-outline:hover {
+            border-color: var(--navy);
+            background: var(--bg);
+        }
+        .btn-danger {
+            background: #fff0f3;
+            color: #e05575;
+            border: 2px solid #ffd6df;
+        }
+        .btn-danger:hover {
+            background: #ffe0e8;
+            border-color: #e05575;
+        }
+        .btn-full { width: 100%; }
+        .btn-sm { padding: 9px 18px; font-size: 13px; }
+
+        /* グラデーションアクセント */
+        .grad-text {
+            background: var(--grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .grad-bar {
+            height: 4px;
+            background: var(--grad);
+            border-radius: 2px;
+            margin-bottom: 32px;
+        }
+
+        /* バッジ */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .badge-pink { background: #fff0f5; color: #e05590; }
+        .badge-blue { background: #f0f8ff; color: #3a9fc0; }
+        .badge-navy { background: #f0f2f8; color: var(--navy); }
+
+        /* アラート */
+        .alert {
+            padding: 16px 20px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .alert-info { background: #f0f6ff; color: #3060c0; border-left: 4px solid #7ec8e3; }
+
+        /* テーブル */
+        .table-wrap { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th {
+            background: var(--bg);
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 2px solid #e8ecf4;
+        }
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #f0f2f8;
+            color: var(--text);
+            vertical-align: middle;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafbff; }
+
+        /* フッター */
+        footer {
+            text-align: center;
+            padding: 40px 24px;
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        /* ロゴSVG */
+        .logo-svg { display: inline-block; }
+    </style>
+    {% block extra_style %}{% endblock %}
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-logo">
+        <svg class="nav-logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="20" r="18" stroke="#1a2744" stroke-width="2"/>
+            <path d="M8 26 Q12 20 20 22 Q28 24 32 18" stroke="#1a2744" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+            <path d="M10 28 Q15 22 20 24 Q25 26 30 20" stroke="#1a2744" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.6"/>
+            <path d="M12 30 Q16 25 20 26 Q24 27 28 23" stroke="#1a2744" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.4"/>
+            <ellipse cx="17" cy="16" rx="3.5" ry="5" fill="#f4a0b5" opacity="0.85" transform="rotate(-10 17 16)"/>
+            <ellipse cx="23" cy="15" rx="3.5" ry="5" fill="#7ec8e3" opacity="0.85" transform="rotate(10 23 15)"/>
+        </svg>
+        <span class="nav-logo-text">NEST</span>
+    </a>
+    <div class="nav-links">
+        {% block nav_links %}{% endblock %}
+    </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<footer>
+    <p>© 2025 NEST — つながる、ひろがる、みつかる。</p>
+</footer>
+
+</body>
+</html>

@@ -1,21 +1,32 @@
-<h1>管理者画面</h1>
+{% extends "base.html" %}
+{% block title %}| 管理者{% endblock %}
 
-    <p>管理者だけが見れます</p>
+{% block nav_links %}
+<a href="/mypage" class="nav-link">マイページ</a>
+<a href="/logout" class="nav-link primary">ログアウト</a>
+{% endblock %}
 
-    <a href="/mypage">
-        マイページへ戻る
-    </a>
-
-    <br><br>
-
-    <a href="/logout">
-        ログアウト
-    </a>
-
-    <br><br>
-
-    <a href="/create_event">
-        イベント作成
-    </a>
-
-    <br><br>
+{% block content %}
+<div class="container">
+    <div style="margin-bottom:32px;">
+        <div class="page-title">管理者ページ</div>
+        <div class="page-subtitle">イベントと参加者の管理</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+        <a href="/create_event" style="text-decoration:none;">
+            <div class="card" style="text-align:center;padding:40px 24px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='var(--shadow-hover)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow)'">
+                <div style="font-size:40px;margin-bottom:12px;">➕</div>
+                <div style="font-weight:700;font-size:16px;color:var(--navy);margin-bottom:4px;">イベント作成</div>
+                <div style="font-size:13px;color:var(--text-light);">新しいイベントを追加</div>
+            </div>
+        </a>
+        <a href="/admin_events" style="text-decoration:none;">
+            <div class="card" style="text-align:center;padding:40px 24px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='var(--shadow-hover)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow)'">
+                <div style="font-size:40px;margin-bottom:12px;">📅</div>
+                <div style="font-weight:700;font-size:16px;color:var(--navy);margin-bottom:4px;">イベント管理</div>
+                <div style="font-size:13px;color:var(--text-light);">編集・削除・参加者確認</div>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

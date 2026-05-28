@@ -1,36 +1,63 @@
-<h1>管理者イベント一覧</h1>
+{% extends "base.html" %}
+{% block title %}| イベント管理{% endblock %}
 
-{% for e in events %}
+{% block nav_links %}
+<a href="/admin" class="nav-link">管理者トップ</a>
+<a href="/create_event" class="nav-link">＋ 作成</a>
+<a href="/logout" class="nav-link primary">ログアウト</a>
+{% endblock %}
 
-<div class="event-card">
-
-    <div class="event-header">
-        <h2 class="event-title">{{ e["title"] }}</h2>
+{% block content %}
+<div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px;">
+        <div>
+            <div class="page-title">イベント管理</div>
+            <div class="page-subtitle">全イベントの編集・削除・参加者確認</div>
+        </div>
+        <a href="/create_event" class="btn btn-primary">＋ 新規イベント作成</a>
     </div>
 
-    <div class="event-actions">
-
-        <a href="/edit_event/{{ e['id'] }}" class="btn edit-btn">
-            編集
-        </a>
-
-        <form action="/delete_event" method="POST" class="action-form">
-
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="event_id" value="{{ e['id'] }}">
-
-            <button type="submit"
-                    class="btn delete-btn"
-                    onclick="return confirm('本当に削除しますか？');">
-                削除
-            </button>
-
-        </form>
-
+    {% if events %}
+    <div class="card" style="padding:0;overflow:hidden;">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>タイトル</th>
+                        <th>締切</th>
+                        <th>定員</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td style="font-weight:600;">{{ event["title"] }}</td>
+                        <td>{{ event["deadline"] }}</td>
+                        <td>{{ event["max_participants"] }}名</td>
+                        <td>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <a href="/event_participants/{{ event['id'] }}" class="btn btn-outline btn-sm">参加者</a>
+                                <a href="/edit_event/{{ event['id'] }}" class="btn btn-navy btn-sm">編集</a>
+                                <form action="/delete_event" method="post" onsubmit="return confirm('削除しますか？')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="event_id" value="{{ event['id'] }}">
+                                    <button type="submit" class="btn btn-danger btn-sm">削除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-
+    {% else %}
+    <div class="card" style="text-align:center;padding:64px 24px;">
+        <div style="font-size:48px;margin-bottom:16px;">📅</div>
+        <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px;">イベントがありません</div>
+        <div style="margin-top:20px;"><a href="/create_event" class="btn btn-primary">最初のイベントを作成</a></div>
+    </div>
+    {% endif %}
 </div>
-
-<hr>
-
-{% endfor %}
+{% endblock %}

@@ -1,48 +1,53 @@
-<!DOCTYPE html>
-<html lang="ja">
+{% extends "base.html" %}
+{% block title %}| マイページ{% endblock %}
 
-<head>
+{% block nav_links %}
+<a href="/events" class="nav-link">イベント一覧</a>
+<a href="/my_events" class="nav-link">参加イベント</a>
+{% if is_admin %}<a href="/admin" class="nav-link">管理者</a>{% endif %}
+<a href="/logout" class="nav-link primary">ログアウト</a>
+{% endblock %}
 
-    <meta charset="UTF-8">
+{% block content %}
+<div class="container">
+    <div class="card" style="margin-bottom:24px;">
+        <div class="grad-bar"></div>
+        <div style="display:flex;align-items:center;gap:20px;">
+            <div style="width:64px;height:64px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:26px;color:white;font-family:'Montserrat',sans-serif;font-weight:700;flex-shrink:0;">
+                {{ username[0]|upper }}
+            </div>
+            <div>
+                <div style="font-size:13px;color:var(--text-light);margin-bottom:4px;">ようこそ</div>
+                <div style="font-size:24px;font-weight:700;font-family:'Montserrat',sans-serif;color:var(--navy);">{{ username }}</div>
+                {% if is_admin %}<span class="badge badge-pink" style="margin-top:6px;">管理者</span>{% endif %}
+            </div>
+        </div>
+    </div>
 
-    <title>マイページ</title>
-
-</head>
-
-<body>
-
-    <h1>マイページ</h1>
-
-    <p>
-        {{ username }} さんログイン中
-    </p>
-
-    <a href="/events">
-        イベント一覧
-    </a>
-
-    <br><br>
-
-    <a href="/my_events">
-        参加イベント一覧
-    </a>
-
-    <br><br>
-
-    {% if is_admin %}
-
-        <a href="/admin">
-            管理者画面
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+        <a href="/events" style="text-decoration:none;">
+            <div class="card" style="text-align:center;padding:32px 24px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='var(--shadow-hover)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow)'">
+                <div style="font-size:36px;margin-bottom:12px;">🎉</div>
+                <div style="font-weight:700;font-size:16px;color:var(--navy);margin-bottom:4px;">イベント一覧</div>
+                <div style="font-size:13px;color:var(--text-light);">開催中のイベントを見る</div>
+            </div>
         </a>
-
-        <br><br>
-
-    {% endif %}
-
-    <a href="/logout">
-        ログアウト
-    </a>
-
-</body>
-
-</html>
+        <a href="/my_events" style="text-decoration:none;">
+            <div class="card" style="text-align:center;padding:32px 24px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='var(--shadow-hover)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow)'">
+                <div style="font-size:36px;margin-bottom:12px;">📋</div>
+                <div style="font-weight:700;font-size:16px;color:var(--navy);margin-bottom:4px;">参加イベント</div>
+                <div style="font-size:13px;color:var(--text-light);">申し込み済みの一覧</div>
+            </div>
+        </a>
+        {% if is_admin %}
+        <a href="/admin" style="text-decoration:none;">
+            <div class="card" style="text-align:center;padding:32px 24px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='var(--shadow-hover)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow)'">
+                <div style="font-size:36px;margin-bottom:12px;">⚙️</div>
+                <div style="font-weight:700;font-size:16px;color:var(--navy);margin-bottom:4px;">管理者ページ</div>
+                <div style="font-size:13px;color:var(--text-light);">イベント管理・参加者確認</div>
+            </div>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

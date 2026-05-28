@@ -1,76 +1,42 @@
-<!DOCTYPE html>
-<html lang="ja">
+{% extends "base.html" %}
+{% block title %}| イベント編集{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>イベント編集</title>
-</head>
+{% block nav_links %}
+<a href="/admin_events" class="nav-link">イベント管理</a>
+<a href="/logout" class="nav-link primary">ログアウト</a>
+{% endblock %}
 
-<body>
+{% block content %}
+<div class="container-sm">
+    <div class="card">
+        <div class="grad-bar"></div>
+        <div class="page-title">イベント編集</div>
+        <div class="page-subtitle">イベント情報を更新してください</div>
 
-<h1>イベント編集</h1>
-
-<form action="/update_event" method="POST">
-
-    <!-- CSRF -->
-    <input
-        type="hidden"
-        name="csrf_token"
-        value="{{ csrf_token() }}"
-    >
-
-    <!-- event_id -->
-    <input
-        type="hidden"
-        name="event_id"
-        value="{{ event['id'] }}"
-    >
-
-    <!-- タイトル -->
-    タイトル<br>
-    <input
-        type="text"
-        name="title"
-        value="{{ event['title'] }}"
-    >
-
-    <br><br>
-
-    <!-- PDFリンク -->
-    PDFリンク<br>
-    <input
-        type="text"
-        name="pdf_link"
-        value="{{ event['pdf_link'] }}"
-    >
-
-    <br><br>
-
-    <!-- 定員 -->
-    定員<br>
-    <input
-        type="number"
-        name="max_participants"
-        value="{{ event['max_participants'] }}"
-    >
-
-    <br><br>
-
-    <!-- 締切（ここが修正ポイント） -->
-    締切<br>
-    <input
-        type="datetime-local"
-        name="deadline"
-        value="{{ event['deadline'][:16] }}"
-    >
-
-    <br><br>
-
-    <button type="submit">
-        更新
-    </button>
-
-</form>
-
-</body>
-</html>
+        <form action="/update_event" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="event_id" value="{{ event['id'] }}">
+            <div class="form-group">
+                <label class="form-label">イベントタイトル</label>
+                <input type="text" name="title" class="form-input" value="{{ event['title'] }}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">詳細PDF URL</label>
+                <input type="url" name="pdf_link" class="form-input" value="{{ event['pdf_link'] }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">定員（人数）</label>
+                <input type="number" name="max_participants" class="form-input" value="{{ event['max_participants'] }}" min="1" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">申込締切</label>
+                <input type="datetime-local" name="deadline" class="form-input" value="{{ event['deadline'] }}" required>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:8px;">
+                <a href="/admin_events" class="btn btn-outline" style="flex:1;text-align:center;">キャンセル</a>
+                <button type="submit" class="btn btn-primary" style="flex:2;">更新する</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,124 +1,20 @@
-<!DOCTYPE html>
-<html lang="ja">
-
-<head>
-    <meta charset="UTF-8">
-    <title>イベント一覧</title>
-
-    <style>
-
-        .event-card {
-            border: 1px solid #ccc;
-            padding: 16px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            background: #fff;
-        }
-
-        .event-header {
-            margin-bottom: 10px;
-        }
-
-        .event-title {
-            margin: 0;
-        }
-
-        .event-body {
-            margin-bottom: 10px;
-        }
-
-        .event-info {
-            margin: 5px 0;
-        }
-
-        .event-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .action-form {
-            display: inline;
-        }
-
-        .btn {
-            padding: 8px 12px;
-            border: none;
-            cursor: pointer;
-            border-radius: 6px;
-        }
-
-        .join-btn {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .edit-btn {
-            background: #2196F3;
-            color: white;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .delete-btn {
-            background: #f44336;
-            color: white;
-        }
-
-    </style>
-
-</head>
-
-<body>
-
-    <h1>イベント一覧</h1>
-
-    {% for event in events %}
-
-    <div class="event-card">
-
-        <div class="event-header">
-            <h2 class="event-title">{{ event["title"] }}</h2>
-        </div>
-
-        <div class="event-body">
-
-            <p class="event-info">
-                定員：{{ event["max_participants"] }}
-            </p>
-
-            <p class="event-info">
-                締切：{{ event["deadline"] }}
-            </p>
-
-            <p class="event-info">
-                PDF：
-                <a href="{{ event['pdf_link'] }}" target="_blank" rel="noopener noreferrer">
-                    詳細を見る
-                </a>
-            </p>
-
-        </div>
-
-        <div class="event-actions">
-
-            <form action="/join_event" method="POST" class="action-form">
-
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="event_id" value="{{ event['id'] }}">
-
-                <button type="submit" class="btn join-btn">
-                    参加する
-                </button>
-
-            </form>
-
-        </div>
-
-    </div>
-
-    {% endfor %}
-
-</body>
-
-</html>
+{% extends "base.html" %} {% block title %}| イベント一覧{% endblock %} {% block nav_links %} マイページ 参加イベント ログアウト {% endblock %} {% block content %}
+イベント一覧
+開催予定のイベントに申し込もう
+{% if events %}
+{% for event in events %}
+イベント
+{{ event["title"] }}
+🗓 締切：{{ event["deadline"] }}
+👥 定員：{{ event["max_participants"] }}名
+{% if event["pdf_link"] %}
+📄 詳細PDF
+{% endif %}
+参加する
+{% endfor %}
+{% else %}
+🎪
+現在開催予定のイベントはありません
+新しいイベントをお待ちください
+{% endif %}
+{% endblock %}

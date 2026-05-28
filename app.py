@@ -2,6 +2,8 @@ from flask import Flask, request, render_template, session, redirect
 import sqlite3
 import os
 
+from datetime import timedelta
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -184,6 +186,7 @@ def register():
         conn.close()
         return render_template("message.html", message="そのIDは既に存在します", back_url="/")
     conn.close()
+    session.permanent = True
     session["username"] = username
     return redirect("/mypage")
 

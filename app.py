@@ -306,6 +306,9 @@ def admin_users():
 @login_required
 def join_event():
     event_id = request.form["event_id"]
+    age = request.form.get("age")
+    drink = request.form.get("drink") == "yes"
+
     conn = get_db()
     cur = conn.cursor()
 
@@ -336,11 +339,13 @@ def join_event():
         conn.close()
         return render_template("message.html", message="定員に達しています", back_url="/events")
 
-    cur.execute("INSERT INTO participants (username, event_id) VALUES (%s, %s)", (session["username"], event_id))
+    cur.execute(
+        "INSERT INTO participants (username, event_id, age, drink) VALUES (%s, %s, %s, %s)",
+        (session["username"], event_id, age, drink)
+    )
     conn.commit()
     conn.close()
     return render_template("message.html", message="応募完了", back_url="/events")
-
 # =========================
 # 参加前確認
 # =========================

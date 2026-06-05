@@ -21,6 +21,8 @@
                     <tr>
                         <th>#</th>
                         <th>ユーザーID</th>
+                        <th>年齢</th>
+                        <th>飲酒</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,6 +30,14 @@
                     <tr>
                         <td style="color:var(--text-light);font-size:13px;">{{ loop.index }}</td>
                         <td style="font-weight:600;">{{ p["username"] }}</td>
+                        <td>{{ p["age"] if p["age"] else "未回答" }}</td>
+                        <td>
+                            {% if p["drink"] %}
+                            <span class="badge badge-pink">🍺 飲む</span>
+                            {% else %}
+                            <span class="badge badge-navy">🥤 飲まない</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

@@ -25,8 +25,7 @@
             <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--text-light);">
                 <span>🗓 締切：{{ event["deadline"] }}</span>
                 {% if event["pdf_link"] %}
-                <a href="{{ event['pdf_link'] }}" target="_blank" style="color:var(--purple);text-decoration:none;font-weight:500;">📄 詳細PDF</a>
-                {% endif %}
+                <a href="{{ event['pdf_link'] }}" target="_blank" style="color:var(--purple);text-decoration:none;font-weight:500;">📄 詳細はこちら</a>
             </div>
             <form action="/cancel_event" method="post" onsubmit="return confirm('参加を取り消しますか？')">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

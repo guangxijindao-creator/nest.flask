@@ -318,7 +318,7 @@ def join_event():
         return render_template("message.html", message="既に応募済みです", back_url="/events")
 
     cur.execute("SELECT COUNT(*) FROM participants WHERE event_id=%s", (event_id,))
-    current_count = cur.fetchone()[0]
+    current_count = cur.fetchone()["count"]
 
     cur.execute("SELECT max_participants, deadline FROM events WHERE id=%s", (event_id,))
     event = cur.fetchone()
@@ -341,7 +341,19 @@ def join_event():
     conn.close()
     return render_template("message.html", message="応募完了", back_url="/events")
 
-
+# =========================
+# 参加前確認
+# =========================
+@app.route("/join_confirm", methods=["POST"])
+@login_required
+def join_confirm():
+    event_id = request.form["event_id"]
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM events WHERE id=%s", (event_id,))
+    event = cur.fetchone()
+    conn.close()
+    return render_template("join_confirm.html", event=event)
 # =========================
 # 自分の参加イベント
 # =========================

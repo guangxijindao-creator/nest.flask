@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}| 参加確認{% endblock %}
+
+{% block nav_links %}
+<a href="/events" class="nav-link">イベント一覧</a>
+<a href="/logout" class="nav-link primary">ログアウト</a>
+{% endblock %}
+
+{% block extra_style %}
+<style>
+.drink-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 8px;
+}
+.drink-option {
+    position: relative;
+}
+.drink-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+}
+.drink-option label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    border: 2px solid #e8ecf4;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.2s;
+    background: var(--bg);
+}
+.drink-option input[type="radio"]:checked + label {
+    border-color: var(--purple);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(176,136,212,0.12);
+    color: var(--navy);
+}
+.drink-option label:hover {
+    border-color: var(--purple);
+    background: white;
+}
+.drink-option.disabled label {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-sm">
+    <div class="card">
+        <div class="grad-bar"></div>
+        <div class="page-title">参加情報の入力</div>
+        <div class="page-subtitle">{{ event["title"] }}</div>
+
+        <form action="/join_event" method="post" id="joinForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="event_id" value="{{ event['id'] }}">
+
+            <div class="form-group">
+                <label class="form-label">年齢</label>
+                <input type="number" name="age" id="ageInput" class="form-input" placeholder="例：22" min="1" max="100" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">当日の飲酒</label>
+                <div class="drink-options">
+                    <div class="drink-option" id="drinkYes">
+                        <input type="radio" name="drink" id="drink_yes" value="yes">
+                        <label for="drink_yes">🍺 飲む</label>
+                    </div>
+                    <div class="drink-option">
+                        <input type="radio" name="drink" id="drink_no" value="no" checked>
+                        <label for="drink_no">🥤 飲まない</label>
+                    </div>
+                </div>
+                <div id="drinkWarning" style="display:none;margin-top:8px;font-size:13px;color:#e05575;background:#fff0f3;padding:10px 14px;border-radius:8px;">
+                    ⚠️ 20歳未満の方はアルコールを選択できません
+                </div>
+            </div>
+
+            <div style="display:flex;gap:12px;margin-top:8px;">
+                <a href="/events" class="btn btn-outline" style="flex:1;text-align:center;">キャンセル</a>
+                <button type="submit" class="btn btn-primary" style="flex:2;">参加する</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const ageInput = document.getElementById('ageInput');
+const drinkYes = document.getElementById('drinkYes');
+const drinkYesRadio = document.getElementById('drink_yes');
+const drinkNoRadio = document.getElementById('drink_no');
+const drinkWarning = document.getElementById('drinkWarning');
+
+ageInput.addEventListener('input', function() {
+    const age = parseInt(this.value);
+    if (age < 20) {
+        drinkYes.classList.add('disabled');
+        drinkYesRadio.disabled = true;
+        if (drinkYesRadio.checked) {
+            drinkNoRadio.checked = true;
+        }
+        drinkWarning.style.display = 'block';
+    } else {
+        drinkYes.classList.remove('disabled');
+        drinkYesRadio.disabled = false;
+        drinkWarning.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

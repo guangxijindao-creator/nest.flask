@@ -27,7 +27,7 @@
                     <span>🗓 締切：{{ event["deadline"] }}</span>
                     <span>👥 定員：{{ event["max_participants"] }}名</span>
                     {% if event["pdf_link"] %}
-                    <a href="/event_detail/{{ event['id'] }}" style="color:var(--purple);text-decoration:none;font-weight:500;">📄 詳細はこちら</a>
+                    <a href="{{ event['pdf_link'] }}" target="_blank" style="color:var(--purple);text-decoration:none;font-weight:500;">📄 詳細はこちら</a>
                     {% endif %}
                 </div>
             </div>

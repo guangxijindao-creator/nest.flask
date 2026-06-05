@@ -285,18 +285,7 @@ def events():
     conn.close()
     return render_template("events.html", events=events)
 
-# =========================
-# イベント詳細
-# =========================
-@app.route("/event_detail/<int:event_id>")
-@login_required
-def event_detail(event_id):
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM events WHERE id=%s", (event_id,))
-    event = cur.fetchone()
-    conn.close()
-    return render_template("event_detail.html", event=event)
+
 # =========================
 # ユーザー一覧
 # =========================

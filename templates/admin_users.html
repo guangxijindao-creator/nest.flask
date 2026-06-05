@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}| ユーザー一覧{% endblock %}
+
+{% block nav_links %}
+<a href="/admin" class="nav-link">管理者トップ</a>
+<a href="/logout" class="nav-link primary">ログアウト</a>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="margin-bottom:32px;">
+        <div class="page-title">ユーザー一覧</div>
+        <div class="page-subtitle">登録済みの全ユーザー</div>
+    </div>
+
+    {% if users %}
+    <div class="card" style="padding:0;overflow:hidden;">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ユーザーID</th>
+                        <th>権限</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td style="color:var(--text-light);font-size:13px;">{{ user["id"] }}</td>
+                        <td style="font-weight:600;">{{ user["username"] }}</td>
+                        <td>
+                            {% if user["is_admin"] == 1 %}
+                            <span class="badge badge-pink">管理者</span>
+                            {% else %}
+                            <span class="badge badge-navy">一般</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div style="padding:16px 20px;background:var(--bg);font-size:13px;color:var(--text-light);">
+            合計 <strong style="color:var(--navy);">{{ users|length }}</strong> 名
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="text-align:center;padding:64px 24px;">
+        <div style="font-size:48px;margin-bottom:16px;">👤</div>
+        <div style="font-size:18px;font-weight:700;color:var(--navy);">ユーザーがいません</div>
+    </div>
+    {% endif %}
+
+    <div style="margin-top:24px;">
+        <a href="/admin" class="btn btn-outline">← 管理者トップに戻る</a>
+    </div>
+</div>
+{% endblock %}

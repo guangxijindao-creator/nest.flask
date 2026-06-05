@@ -477,11 +477,10 @@ def delete_event():
 def event_participants(event_id):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT username FROM participants WHERE event_id=%s", (event_id,))
+    cur.execute("SELECT username, age, drink FROM participants WHERE event_id=%s", (event_id,))
     participants = cur.fetchall()
     conn.close()
     return render_template("participants.html", participants=participants)
-
 
 
 

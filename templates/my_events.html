@@ -28,6 +28,11 @@
                 <a href="{{ event['pdf_link'] }}" target="_blank" style="color:var(--purple);text-decoration:none;font-weight:500;">📄 詳細PDF</a>
                 {% endif %}
             </div>
+            <form action="/cancel_event" method="post" onsubmit="return confirm('参加を取り消しますか？')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="event_id" value="{{ event['id'] }}">
+                <button type="submit" class="btn btn-danger btn-sm" style="margin-top:12px;">参加取り消し</button>
+            </form>
         </div>
         {% endfor %}
     </div>

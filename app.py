@@ -49,12 +49,7 @@ def get_db():
 def validate_event_input(title, pdf_link, max_participants, deadline):
     if not title or len(title.strip()) == 0:
         return "タイトルが空です"
-    if not pdf_link:
-        return "PDFリンクが空です"
-    if not pdf_link.startswith("https://"):
-        return "URLはhttpsから始まる必要があります"
-    if not pdf_link.lower().endswith(".pdf"):
-        return "PDFファイルのみ許可されています"
+    
     try:
         int(max_participants)
     except:
@@ -366,7 +361,22 @@ def my_events():
     conn.close()
     return render_template("my_events.html", events=events)
 
-
+# =========================
+# イベント参加取り消し
+# =========================
+@app.route("/cancel_event", methods=["POST"])
+@login_required
+def cancel_event():
+    event_id = request.form["event_id"]
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        "DELETE FROM participants WHERE username=%s AND event_id=%s",
+        (session["username"], event_id)
+    )
+    conn.commit()
+    conn.close()
+    return render_template("message.html", message="参加を取り消しました", back_url="/my_events")
 # =========================
 # 管理者イベント一覧
 # =========================

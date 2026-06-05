@@ -457,15 +457,7 @@ def event_participants(event_id):
 
 
 
-@app.route("/admin_users")
-@admin_required
-def admin_users():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT id, username, is_admin FROM users ORDER BY id")
-    users = cur.fetchall()
-    conn.close()
-    return render_template("admin_users.html", users=users)
+
 # =========================
 # 起動
 # =========================

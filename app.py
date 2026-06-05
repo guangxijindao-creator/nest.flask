@@ -147,7 +147,7 @@ def create_admin():
     admin_user = cur.fetchone()
     if not admin_user:
         cur.execute(
-            "INSERT INTO users (username, password, is_admin) VALUES (?, ?, 1)",
+            "INSERT INTO users (username, password, is_admin) VALUES (%s, %s, 1)",
             ("admin", generate_password_hash("nest_20060503"))
         )
         conn.commit()

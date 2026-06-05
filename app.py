@@ -1,14 +1,15 @@
+
 from flask import Flask, request, render_template, session, redirect
 import sqlite3
 import os
+import psycopg2
+import psycopg2.extras
 
-from datetime import timedelta
-app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 
 from config import Config
@@ -16,13 +17,13 @@ from flask_wtf.csrf import CSRFProtect
 
 # .env 読み込み
 load_dotenv()
-
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # config読み込み → SECRET_KEY設定 → CSRF初期化（この順番を守る）
 app.config.from_object(Config)
 app.secret_key = app.config["SECRET_KEY"]
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30) 
 csrf = CSRFProtect(app)
 
 
@@ -31,8 +32,13 @@ csrf = CSRFProtect(app)
 # =========================
 
 def get_db():
-    conn = sqlite3.connect(app.config["DATABASE"])
-    conn.row_factory = sqlite3.Row
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url:
+        conn = psycopg2.connect(database_url)
+        conn.cursor_factory = psycopg2.extras.RealDictCursor
+    else:
+        conn = sqlite3.connect(app.config["DATABASE"])
+        conn.row_factory = sqlite3.Row
     return conn
 
 
@@ -80,7 +86,7 @@ def is_admin_user():
         return False
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT is_admin FROM users WHERE username=?", (session["username"],))
+    cur.execute("SELECT is_admin FROM users WHERE username=%s", (session["username"],))
     user = cur.fetchone()
     conn.close()
     return user and user["is_admin"] == 1
@@ -104,7 +110,7 @@ def init_db():
     cur = conn.cursor()
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         username TEXT UNIQUE,
         password TEXT,
         is_admin INTEGER DEFAULT 0
@@ -112,7 +118,7 @@ def init_db():
     """)
     cur.execute("""
     CREATE TABLE IF NOT EXISTS events (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         title TEXT,
         pdf_link TEXT,
         max_participants INTEGER,
@@ -121,7 +127,7 @@ def init_db():
     """)
     cur.execute("""
     CREATE TABLE IF NOT EXISTS participants (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         username TEXT,
         event_id INTEGER
     )
@@ -137,7 +143,7 @@ def init_db():
 def create_admin():
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM users WHERE username=?", ("admin",))
+    cur.execute("SELECT * FROM users WHERE username=%s", ("admin",))
     admin_user = cur.fetchone()
     if not admin_user:
         cur.execute(
@@ -179,14 +185,13 @@ def register():
     conn = get_db()
     cur = conn.cursor()
     try:
-        cur.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
+        cur.execute("INSERT INTO users (username, password) VALUES (?, %s)", (username, hashed_password))
         conn.commit()
     except Exception as e:
         print(e)
         conn.close()
         return render_template("message.html", message="そのIDは既に存在します", back_url="/")
     conn.close()
-    session.permanent = True
     session["username"] = username
     return redirect("/mypage")
 
@@ -201,7 +206,7 @@ def login():
     password = request.form["password"]
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM users WHERE username=?", (username,))
+    cur.execute("SELECT * FROM users WHERE username=%s", (username,))
     user = cur.fetchone()
     conn.close()
     if user and check_password_hash(user["password"], password):
@@ -264,7 +269,7 @@ def save_event():
     conn = get_db()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO events (title, pdf_link, max_participants, deadline) VALUES (?, ?, ?, ?)",
+        "INSERT INTO events (title, pdf_link, max_participants, deadline) VALUES (?, ?, ?, %s)",
         (title, pdf_link, max_participants, deadline)
     )
     conn.commit()
@@ -298,17 +303,17 @@ def join_event():
     cur = conn.cursor()
 
     cur.execute(
-        "SELECT * FROM participants WHERE username=? AND event_id=?",
+        "SELECT * FROM participants WHERE username=%s AND event_id=%s",
         (session["username"], event_id)
     )
     if cur.fetchone():
         conn.close()
         return render_template("message.html", message="既に応募済みです", back_url="/events")
 
-    cur.execute("SELECT COUNT(*) FROM participants WHERE event_id=?", (event_id,))
+    cur.execute("SELECT COUNT(*) FROM participants WHERE event_id=%s", (event_id,))
     current_count = cur.fetchone()[0]
 
-    cur.execute("SELECT max_participants, deadline FROM events WHERE id=?", (event_id,))
+    cur.execute("SELECT max_participants, deadline FROM events WHERE id=%s", (event_id,))
     event = cur.fetchone()
 
     if not event:
@@ -324,7 +329,7 @@ def join_event():
         conn.close()
         return render_template("message.html", message="定員に達しています", back_url="/events")
 
-    cur.execute("INSERT INTO participants (username, event_id) VALUES (?, ?)", (session["username"], event_id))
+    cur.execute("INSERT INTO participants (username, event_id) VALUES (?, %s)", (session["username"], event_id))
     conn.commit()
     conn.close()
     return render_template("message.html", message="応募完了", back_url="/events")
@@ -343,7 +348,7 @@ def my_events():
         SELECT events.id, events.title, events.pdf_link, events.deadline
         FROM participants
         JOIN events ON participants.event_id = events.id
-        WHERE participants.username=?
+        WHERE participants.username=%s
     """, (session["username"],))
     events = cur.fetchall()
     conn.close()
@@ -374,7 +379,7 @@ def admin_events():
 def edit_event(event_id):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM events WHERE id=?", (event_id,))
+    cur.execute("SELECT * FROM events WHERE id=%s", (event_id,))
     event = cur.fetchone()
     conn.close()
     return render_template("edit_event.html", event=event)
@@ -400,7 +405,7 @@ def update_event():
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
-        UPDATE events SET title=?, pdf_link=?, max_participants=?, deadline=? WHERE id=?
+        UPDATE events SET title=%s, pdf_link=%s, max_participants=%s, deadline=%s WHERE id=%s
     """, (title, pdf_link, int(max_participants), deadline, event_id))
     conn.commit()
     conn.close()
@@ -417,8 +422,8 @@ def delete_event():
     event_id = request.form["event_id"]
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("DELETE FROM participants WHERE event_id=?", (event_id,))
-    cur.execute("DELETE FROM events WHERE id=?", (event_id,))
+    cur.execute("DELETE FROM participants WHERE event_id=%s", (event_id,))
+    cur.execute("DELETE FROM events WHERE id=%s", (event_id,))
     conn.commit()
     conn.close()
     return render_template("message.html", message="イベント削除成功", back_url="/admin_events")
@@ -433,7 +438,7 @@ def delete_event():
 def event_participants(event_id):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT username FROM participants WHERE event_id=?", (event_id,))
+    cur.execute("SELECT username FROM participants WHERE event_id=%s", (event_id,))
     participants = cur.fetchall()
     conn.close()
     return render_template("participants.html", participants=participants)

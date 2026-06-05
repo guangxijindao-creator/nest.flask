@@ -185,7 +185,7 @@ def register():
     conn = get_db()
     cur = conn.cursor()
     try:
-        cur.execute("INSERT INTO users (username, password) VALUES (?, %s)", (username, hashed_password))
+        cur.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
         conn.commit()
     except Exception as e:
         print(e)
@@ -269,7 +269,7 @@ def save_event():
     conn = get_db()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO events (title, pdf_link, max_participants, deadline) VALUES (?, ?, ?, %s)",
+        "INSERT INTO events (title, pdf_link, max_participants, deadline) VALUES (%s, %s, %s, %s)",
         (title, pdf_link, max_participants, deadline)
     )
     conn.commit()
@@ -291,6 +291,18 @@ def events():
     return render_template("events.html", events=events)
 
 
+# =========================
+# ユーザー一覧
+# =========================
+@app.route("/admin_users")
+@admin_required
+def admin_users():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT id, username, is_admin FROM users ORDER BY id")
+    users = cur.fetchall()
+    conn.close()
+    return render_template("admin_users.html", users=users)
 # =========================
 # イベント参加
 # =========================
@@ -329,7 +341,7 @@ def join_event():
         conn.close()
         return render_template("message.html", message="定員に達しています", back_url="/events")
 
-    cur.execute("INSERT INTO participants (username, event_id) VALUES (?, %s)", (session["username"], event_id))
+    cur.execute("INSERT INTO participants (username, event_id) VALUES (%s, %s)", (session["username"], event_id))
     conn.commit()
     conn.close()
     return render_template("message.html", message="応募完了", back_url="/events")
@@ -444,6 +456,16 @@ def event_participants(event_id):
     return render_template("participants.html", participants=participants)
 
 
+
+@app.route("/admin_users")
+@admin_required
+def admin_users():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT id, username, is_admin FROM users ORDER BY id")
+    users = cur.fetchall()
+    conn.close()
+    return render_template("admin_users.html", users=users)
 # =========================
 # 起動
 # =========================

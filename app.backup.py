@@ -238,50 +238,48 @@ def index():
 
 
 # =========================
-# ユーザ登録
+# ユーザ登録（名前のみ／既存なら再ログイン）
 # =========================
 
 @app.route("/register", methods=["POST"])
 def register():
 
-    username = request.form["username"]
-    password = request.form["password"]
-    password_confirm = request.form["password_confirm"]
+    username = request.form.get("username", "").strip()
 
-    # パスワード一致確認
-    if password != password_confirm:
-
+    if not username:
         return render_template(
             "message.html",
-            message="パスワードが一致しません",
+            message="お名前を入力してください",
             back_url="/"
         )
-
-    hashed_password = generate_password_hash(password)
 
     conn = get_db()
     cur = conn.cursor()
 
-    try:
+    # 既存ユーザーか確認
+    cur.execute(
+        "SELECT * FROM users WHERE username=?",
+        (username,)
+    )
+    existing_user = cur.fetchone()
 
-        cur.execute(
-            "INSERT INTO users (username, password) VALUES (?, ?)",
-            (username, hashed_password)
-        )
+    if not existing_user:
 
-        conn.commit()
+        try:
+            cur.execute(
+                "INSERT INTO users (username, password) VALUES (?, ?)",
+                (username, None)
+            )
+            conn.commit()
 
-    except Exception as e:
-
-        print(e)
-
-        conn.close()
-
-        return render_template(
-            "message.html",
-            message="そのIDは既に存在します",
-            back_url="/"
-        )
+        except Exception as e:
+            print(e)
+            conn.close()
+            return render_template(
+                "message.html",
+                message="登録に失敗しました",
+                back_url="/"
+            )
 
     conn.close()
 
@@ -292,11 +290,14 @@ def register():
 
 
 # =========================
-# ログイン
+# 管理者ログイン（一般公開はしない専用ルート）
 # =========================
 
-@app.route("/login", methods=["POST"])
-def login():
+@app.route("/admin_login", methods=["GET", "POST"])
+def admin_login():
+
+    if request.method == "GET":
+        return render_template("admin_login.html")
 
     username = request.form["username"]
     password = request.form["password"]
@@ -309,16 +310,11 @@ def login():
 
     conn.close()
 
-    print("USER:", user)
-
-    if user:
-        print("PASSWORD CHECK:", check_password_hash(user["password"], password))
-
-    if user and check_password_hash(user["password"], password):
+    if user and user["password"] and check_password_hash(user["password"], password):
         session["username"] = username
         return redirect("/mypage")
 
-    return render_template("message.html", message="NG", back_url="/")
+    return render_template("message.html", message="NG", back_url="/admin_login")
 
 # =========================
 # ログアウト

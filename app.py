@@ -1,11 +1,11 @@
-
-
 from flask import Flask, request, render_template, session, redirect
-import sqlite3
 import os
 
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
+
+import psycopg2
+import psycopg2.extras
 
 from datetime import datetime
 from functools import wraps
@@ -16,9 +16,9 @@ from flask_wtf.csrf import CSRFProtect
 
 # .env 読み込み
 load_dotenv()
-from werkzeug.middleware.proxy_fix import ProxyFix 
+from werkzeug.middleware.proxy_fix import ProxyFix
 app = Flask(__name__)
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1) 
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.config["WTF_CSRF_ENABLED"] = False
 app.config["WTF_CSRF_TIME_LIMIT"] = None
 # config.py 読み込み
@@ -28,49 +28,50 @@ app.config.from_object(Config)
 app.secret_key = app.config["SECRET_KEY"]
 # CSRF対策
 csrf = CSRFProtect(app)
+
 # =========================
-# DB接続
+# DB接続（Postgres / Supabase）
 # =========================
+
+def get_database_url():
+    # 環境変数優先。無ければconfig.pyの値を使う
+    return os.environ.get("DATABASE_URL") or app.config.get("DATABASE_URL")
+
+
+def get_db():
+    conn = psycopg2.connect(get_database_url())
+    return conn
+
+
+def get_cursor(conn):
+    # 辞書形式（user["username"]のように）でアクセスできるカーソル
+    return conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
 
 @app.route("/debug_db")
 def debug_db():
-    import sqlite3
-    import os
+    conn = get_db()
+    cur = get_cursor(conn)
 
-    path = app.config["DATABASE"]
-
-    conn = sqlite3.connect(path)
-    cur = conn.cursor()
-
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    cur.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
     tables = cur.fetchall()
 
     cur.execute("SELECT * FROM users")
     users = cur.fetchall()
 
+    conn.close()
+
     return {
-        "db_path": path,
-        "cwd": os.getcwd(),
         "tables": str(tables),
         "users": str(users)
     }
 
-def get_db():
-
-    conn = sqlite3.connect(app.config["DATABASE"])
-
-    # user["username"] のように使える
-    conn.row_factory = sqlite3.Row
-
-    return conn
 
 def validate_event_input(title, pdf_link, max_participants, deadline):
-    
-    # title
+
     if not title or len(title.strip()) == 0:
         return "タイトルが空です"
 
-    # pdf
     if not pdf_link:
         return "PDFリンクが空です"
 
@@ -80,17 +81,16 @@ def validate_event_input(title, pdf_link, max_participants, deadline):
     if not pdf_link.lower().endswith(".pdf"):
         return "PDFファイルのみ許可されています"
 
-    # max participants
     try:
         int(max_participants)
     except:
         return "人数は数値で入力してください"
 
-    # deadline
     if not deadline:
         return "締切が必要です"
 
     return None
+
 # =========================
 # ログイン確認
 # =========================
@@ -101,12 +101,12 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
 
         if "username" not in session:
-
             return redirect("/")
 
         return f(*args, **kwargs)
 
     return decorated_function
+
 # =========================
 # 管理者確認
 # =========================
@@ -117,10 +117,10 @@ def is_admin_user():
         return False
 
     conn = get_db()
-    cur = conn.cursor()
+    cur = get_cursor(conn)
 
     cur.execute(
-        "SELECT is_admin FROM users WHERE username=?",
+        "SELECT is_admin FROM users WHERE username=%s",
         (session["username"],)
     )
 
@@ -128,7 +128,8 @@ def is_admin_user():
 
     conn.close()
 
-    return user and user["is_admin"] == 1
+    return bool(user and user["is_admin"] == 1)
+
 
 def admin_required(f):
 
@@ -136,7 +137,6 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
 
         if not is_admin_user():
-
             return render_template(
                 "message.html",
                 message="権限がありません",
@@ -158,7 +158,7 @@ def init_db():
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         username TEXT UNIQUE,
         password TEXT,
         is_admin INTEGER DEFAULT 0
@@ -167,7 +167,7 @@ def init_db():
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS events (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         title TEXT,
         pdf_link TEXT,
         max_participants INTEGER,
@@ -177,7 +177,7 @@ def init_db():
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS participants (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         username TEXT,
         event_id INTEGER
     )
@@ -186,7 +186,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-
 # =========================
 # 管理者作成
 # =========================
@@ -194,10 +193,10 @@ def init_db():
 def create_admin():
 
     conn = get_db()
-    cur = conn.cursor()
+    cur = get_cursor(conn)
 
     cur.execute(
-        "SELECT * FROM users WHERE username=?",
+        "SELECT * FROM users WHERE username=%s",
         ("admin",)
     )
 
@@ -209,7 +208,7 @@ def create_admin():
             """
             INSERT INTO users
             (username, password, is_admin)
-            VALUES (?, ?, 1)
+            VALUES (%s, %s, 1)
             """,
             (
                 "admin",
@@ -233,7 +232,6 @@ create_admin()
 
 @app.route("/")
 def index():
-
     return render_template("index.html")
 
 
@@ -254,11 +252,11 @@ def register():
         )
 
     conn = get_db()
-    cur = conn.cursor()
+    cur = get_cursor(conn)
 
     # 既存ユーザーか確認
     cur.execute(
-        "SELECT * FROM users WHERE username=?",
+        "SELECT * FROM users WHERE username=%s",
         (username,)
     )
     existing_user = cur.fetchone()
@@ -267,7 +265,7 @@ def register():
 
         try:
             cur.execute(
-                "INSERT INTO users (username, password) VALUES (?, ?)",
+                "INSERT INTO users (username, password) VALUES (%s, %s)",
                 (username, None)
             )
             conn.commit()
@@ -303,9 +301,9 @@ def admin_login():
     password = request.form["password"]
 
     conn = get_db()
-    cur = conn.cursor()
+    cur = get_cursor(conn)
 
-    cur.execute("SELECT * FROM users WHERE username=?", (username,))
+    cur.execute("SELECT * FROM users WHERE username=%s", (username,))
     user = cur.fetchone()
 
     conn.close()
@@ -322,9 +320,7 @@ def admin_login():
 
 @app.route("/logout")
 def logout():
-
     session.pop("username", None)
-
     return redirect("/")
 
 
@@ -348,7 +344,6 @@ def mypage():
 @app.route("/admin")
 @admin_required
 def admin():
-
     return render_template("admin.html")
 
 
@@ -360,7 +355,6 @@ def admin():
 def create_event():
 
     if not is_admin_user():
-
         return render_template(
             "message.html",
             message="権限がありません",
@@ -378,7 +372,6 @@ def create_event():
 def save_event():
 
     if not is_admin_user():
-
         return render_template(
             "message.html",
             message="権限がありません",
@@ -397,7 +390,7 @@ def save_event():
         """
         INSERT INTO events
         (title, pdf_link, max_participants, deadline)
-        VALUES (?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s)
         """,
         (
             title,
@@ -425,7 +418,7 @@ def save_event():
 def events():
 
     conn = get_db()
-    cur = conn.cursor()
+    cur = get_cursor(conn)
 
     cur.execute("SELECT * FROM events")
 
@@ -449,13 +442,13 @@ def join_event():
     event_id = request.form["event_id"]
 
     conn = get_db()
-    cur = conn.cursor()
+    cur = get_cursor(conn)
 
     # 重複確認
     cur.execute(
         """
         SELECT * FROM participants
-        WHERE username=? AND event_id=?
+        WHERE username=%s AND event_id=%s
         """,
         (
             session["username"],
@@ -466,9 +459,7 @@ def join_event():
     already_joined = cur.fetchone()
 
     if already_joined:
-
         conn.close()
-
         return render_template(
             "message.html",
             message="既に応募済みです",
@@ -480,19 +471,19 @@ def join_event():
         """
         SELECT COUNT(*)
         FROM participants
-        WHERE event_id=?
+        WHERE event_id=%s
         """,
         (event_id,)
     )
 
-    current_count = cur.fetchone()[0]
+    current_count = cur.fetchone()["count"]
 
     # イベント取得
     cur.execute(
         """
         SELECT max_participants, deadline
         FROM events
-        WHERE id=?
+        WHERE id=%s
         """,
         (event_id,)
     )
@@ -500,9 +491,7 @@ def join_event():
     event = cur.fetchone()
 
     if not event:
-
         conn.close()
-
         return render_template(
             "message.html",
             message="イベントが存在しません",
@@ -520,9 +509,7 @@ def join_event():
 
     # 締切確認
     if now > deadline:
-
         conn.close()
-
         return render_template(
             "message.html",
             message="応募締切済みです",
@@ -531,9 +518,7 @@ def join_event():
 
     # 定員確認
     if current_count >= max_participants:
-
         conn.close()
-
         return render_template(
             "message.html",
             message="定員に達しています",
@@ -545,7 +530,7 @@ def join_event():
         """
         INSERT INTO participants
         (username, event_id)
-        VALUES (?, ?)
+        VALUES (%s, %s)
         """,
         (
             session["username"],
@@ -570,9 +555,9 @@ def join_event():
 @app.route("/my_events")
 @login_required
 def my_events():
-    
+
     conn = get_db()
-    cur = conn.cursor()
+    cur = get_cursor(conn)
 
     cur.execute(
         """
@@ -584,7 +569,7 @@ def my_events():
         FROM participants
         JOIN events
         ON participants.event_id = events.id
-        WHERE participants.username=?
+        WHERE participants.username=%s
         """,
         (session["username"],)
     )
@@ -607,7 +592,6 @@ def my_events():
 def admin_events():
 
     if not is_admin_user():
-
         return render_template(
             "message.html",
             message="権限がありません",
@@ -615,7 +599,7 @@ def admin_events():
         )
 
     conn = get_db()
-    cur = conn.cursor()
+    cur = get_cursor(conn)
 
     cur.execute("SELECT * FROM events")
 
@@ -637,7 +621,6 @@ def admin_events():
 def edit_event(event_id):
 
     if not is_admin_user():
-
         return render_template(
             "message.html",
             message="権限がありません",
@@ -645,10 +628,10 @@ def edit_event(event_id):
         )
 
     conn = get_db()
-    cur = conn.cursor()
+    cur = get_cursor(conn)
 
     cur.execute(
-        "SELECT * FROM events WHERE id=?",
+        "SELECT * FROM events WHERE id=%s",
         (event_id,)
     )
 
@@ -669,9 +652,6 @@ def edit_event(event_id):
 @app.route("/update_event", methods=["POST"])
 def update_event():
 
-    # -------------------------
-    # 権限チェック
-    # -------------------------
     if not is_admin_user():
         return render_template(
             "message.html",
@@ -679,18 +659,12 @@ def update_event():
             back_url="/mypage"
         )
 
-    # -------------------------
-    # 取得
-    # -------------------------
     event_id = request.form["event_id"]
     title = request.form["title"]
     pdf_link = request.form.get("pdf_link", "")
     max_participants = request.form["max_participants"]
     deadline = request.form["deadline"]
 
-    # -------------------------
-    # バリデーション
-    # -------------------------
     error = validate_event_input(
         title,
         pdf_link,
@@ -705,16 +679,13 @@ def update_event():
             back_url="/admin_events"
         )
 
-    # -------------------------
-    # DB更新（ここが抜けてた）
-    # -------------------------
     conn = get_db()
     cur = conn.cursor()
 
     cur.execute("""
         UPDATE events
-        SET title=?, pdf_link=?, max_participants=?, deadline=?
-        WHERE id=?
+        SET title=%s, pdf_link=%s, max_participants=%s, deadline=%s
+        WHERE id=%s
     """, (
         title,
         pdf_link,
@@ -726,19 +697,17 @@ def update_event():
     conn.commit()
     conn.close()
 
-    # -------------------------
-    # 成功
-    # -------------------------
     return render_template(
         "message.html",
         message="イベント更新成功",
         back_url="/admin_events"
     )
+
+
 @app.route("/delete_event", methods=["POST"])
 def delete_event():
 
     if not is_admin_user():
-
         return render_template(
             "message.html",
             message="権限がありません",
@@ -752,13 +721,13 @@ def delete_event():
 
     # 参加情報削除
     cur.execute(
-        "DELETE FROM participants WHERE event_id=?",
+        "DELETE FROM participants WHERE event_id=%s",
         (event_id,)
     )
 
     # イベント削除
     cur.execute(
-        "DELETE FROM events WHERE id=?",
+        "DELETE FROM events WHERE id=%s",
         (event_id,)
     )
 
@@ -780,7 +749,6 @@ def delete_event():
 def event_participants(event_id):
 
     if not is_admin_user():
-
         return render_template(
             "message.html",
             message="権限がありません",
@@ -788,13 +756,13 @@ def event_participants(event_id):
         )
 
     conn = get_db()
-    cur = conn.cursor()
+    cur = get_cursor(conn)
 
     cur.execute(
         """
         SELECT username
         FROM participants
-        WHERE event_id=?
+        WHERE event_id=%s
         """,
         (event_id,)
     )
@@ -814,7 +782,6 @@ def event_participants(event_id):
 # =========================
 
 if __name__ == "__main__":
-    import os
     app.run(
         host="0.0.0.0",
         port=int(os.environ.get("PORT", 5000)),
